@@ -1,0 +1,48 @@
+name: انتشار داشبورد روی GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: دریافت کد پروژه
+        uses: actions/checkout@v4
+
+      - name: آماده‌سازی فایل سایت
+        run: |
+          test -f public/index.html
+          test -f public/data/prices.json
+
+      - name: بارگذاری فایل سایت
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: انتشار در GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
